@@ -333,6 +333,7 @@
         function togglePosters() {
             hidePosters = posterToggle.checked;
             renderSlider();
+            renderTrackList(); // Dono sections par apply hoga
         }
 
         sliderContainer.addEventListener("scroll", () => {
@@ -377,7 +378,6 @@
                 slide.className = "flex-shrink-0 w-44 md:w-52 glass-card-3d p-3.5 rounded-3xl cursor-pointer group";
 
                 if (hidePosters) {
-                    // Jab toggle ON ho (Show Posters off / Vinyl Mode active), toh vinyl ke center mein song poster show karein
                     slide.innerHTML = `
                         <div class="perspective-container w-full h-40 md:h-48 rounded-2xl mb-3 bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-white relative">
                             <div class="vinyl-3d w-28 h-28 rounded-full flex items-center justify-center relative shadow-md">
@@ -390,7 +390,6 @@
                         <p class="text-[11px] text-serene-600 dark:text-serene-400 truncate mt-0.5">${song.artistName}</p>
                     `;
                 } else {
-                    // Normal poster view
                     slide.innerHTML = `
                         <div class="relative overflow-hidden rounded-2xl mb-3 shadow-xs">
                             <img src="${song.artworkUrl100.replace('100x100bb', '400x400bb')}" class="w-full h-40 md:h-48 object-cover group-hover:scale-105 transition duration-500">
@@ -414,9 +413,24 @@
                 const card = document.createElement("div");
                 card.className = "glass-card-3d p-3.5 rounded-3xl flex items-center justify-between cursor-pointer hover:border-serene-300 transition";
 
+                let imageHtml = "";
+                if (hidePosters) {
+                    imageHtml = `
+                        <div class="perspective-container w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-white relative shrink-0">
+                            <div class="vinyl-3d w-10 h-10 rounded-full flex items-center justify-center relative shadow-sm">
+                                <div class="w-4 h-4 rounded-full overflow-hidden border border-serene-300 flex items-center justify-center absolute">
+                                    <img src="${song.artworkUrl100}" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    imageHtml = `<img src="${song.artworkUrl100}" class="w-12 h-12 md:w-14 md:h-14 rounded-2xl object-cover border border-white dark:border-slate-700 shrink-0">`;
+                }
+
                 card.innerHTML = `
                     <div class="flex items-center gap-4 overflow-hidden">
-                        <img src="${song.artworkUrl100}" class="w-12 h-12 md:w-14 md:h-14 rounded-2xl object-cover border border-white dark:border-slate-700">
+                        ${imageHtml}
                         <div class="overflow-hidden">
                             <h4 class="text-sm font-bold truncate text-slate-800 dark:text-white">${song.trackName}</h4>
                             <p class="text-xs text-serene-600 dark:text-serene-400 truncate mt-0.5">${song.artistName}</p>
