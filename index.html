@@ -280,7 +280,7 @@
         </div>
     </div>
 
-    <audio id="audio-player" crossorigin="anonymous" preload="auto"></audio>
+    <audio id="audio-player" preload="auto"></audio>
 
     <script>
         const splashScreen = document.getElementById("splash-screen");
@@ -442,10 +442,11 @@
             const song = tracks[currentIndex];
             if (!song || !song.previewUrl) return;
 
+            // Safely stop playback before changing sources to clear out AbortErrors
             audio.pause();
+            audio.currentTime = 0;
             
             let streamUrl = song.previewUrl.replace(/^http:/, 'https:');
-            const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(streamUrl);
 
             playerTitle.innerText = song.trackName;
             playerArtist.innerText = song.artistName;
@@ -454,17 +455,15 @@
 
             playerModal.classList.remove("translate-y-full");
 
+            // Direct iTunes stream URLs natively support audio elements without extra corsproxy.io wrapper issues
             audio.src = streamUrl;
-            audio.load();
-
-            const playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(() => {
-                    audio.src = proxyUrl;
-                    audio.load();
-                    audio.play().catch(e => console.error("Audio playback error:", e));
-                });
-            }
+            
+            audio.play().catch(e => {
+                // Ignore intentional play interruptions safely
+                if (e.name !== 'AbortError') {
+                    console.error("Audio playback error:", e);
+                }
+            });
         }
 
         function closePlayer() {
@@ -474,7 +473,9 @@
 
         function togglePlayPause() {
             if (audio.paused) {
-                audio.play().catch(e => console.warn(e));
+                audio.play().catch(e => {
+                    if (e.name !== 'AbortError') console.warn(e);
+                });
             } else {
                 audio.pause();
             }
