@@ -444,24 +444,22 @@
 
             audio.pause();
             
-            // Primary stream with CORS Proxy fallback for restricted environments
-            const directUrl = song.previewUrl;
-            const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(directUrl);
-
-            audio.src = directUrl;
-            audio.load();
+            let streamUrl = song.previewUrl.replace(/^http:/, 'https:');
+            const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(streamUrl);
 
             playerTitle.innerText = song.trackName;
             playerArtist.innerText = song.artistName;
             playerImg.src = song.artworkUrl100.replace('100x100bb', '400x400bb');
-            downloadBtn.href = song.previewUrl;
+            downloadBtn.href = streamUrl;
 
             playerModal.classList.remove("translate-y-full");
-            
+
+            audio.src = streamUrl;
+            audio.load();
+
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
-                    // Fallback to proxy stream if direct loading fails
                     audio.src = proxyUrl;
                     audio.load();
                     audio.play().catch(e => console.error("Audio playback error:", e));
